@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import { Providers } from "./providers";
+import { ConsentBanner } from "@/components/consent-banner";
 
 // Zero layout shift: tipografia carregada via next/font (seção 5 do spec).
 const inter = Inter({
@@ -24,7 +25,10 @@ export default function RootLayout({
   return (
     <html lang="pt-BR" className={inter.variable}>
       <body className="font-sans">
-        <Providers>{children}</Providers>
+        <Providers>
+          {children}
+          <ConsentBanner />
+        </Providers>
       </body>
     </html>
   );

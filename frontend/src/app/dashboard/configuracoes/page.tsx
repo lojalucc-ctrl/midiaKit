@@ -7,7 +7,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Loader2, KeyRound, Save } from "lucide-react";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { PasswordInput } from "@/components/ui/password-input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { ImageUploader } from "@/components/dashboard/image-uploader";
@@ -38,6 +38,7 @@ export default function ConfiguracoesPage() {
     register,
     handleSubmit,
     reset,
+    setError,
     formState: { errors }
   } = useForm<PwValues>({ resolver: zodResolver(pwSchema) });
 
@@ -47,12 +48,14 @@ export default function ConfiguracoesPage() {
       toast({ variant: "success", title: "Senha alterada", description: "Sua nova senha já está valendo." });
       reset();
     },
-    onError: (e) =>
-      toast({
-        variant: "destructive",
-        title: "Não foi possível alterar a senha",
-        description: e instanceof Error ? e.message : "Tente novamente."
-      })
+    onError: (e) => {
+      const m = e instanceof Error ? e.message : "Tente novamente.";
+      // Erro relacionado à senha atual -> destaca no campo.
+      if (/atual/i.test(m)) {
+        setError("currentPassword", { type: "server", message: m });
+      }
+      toast({ variant: "destructive", title: "Não foi possível alterar a senha", description: m });
+    }
   });
 
   function saveAvatar() {
@@ -110,18 +113,21 @@ export default function ConfiguracoesPage() {
           <form onSubmit={handleSubmit((v) => changePw.mutate(v))} className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="currentPassword">Senha atual</Label>
-              <Input id="currentPassword" type="password" {...register("currentPassword")} />
+              <PasswordInput id="currentPassword" {...register("currentPassword")} />
+              {errors.currentPassword && (
+                <p className="text-sm text-destructive">{errors.currentPassword.message}</p>
+              )}
             </div>
             <div className="space-y-2">
               <Label htmlFor="newPassword">Nova senha</Label>
-              <Input id="newPassword" type="password" {...register("newPassword")} />
+              <PasswordInput id="newPassword" {...register("newPassword")} />
               {errors.newPassword && (
                 <p className="text-sm text-destructive">{errors.newPassword.message}</p>
               )}
             </div>
             <div className="space-y-2">
               <Label htmlFor="confirm">Confirmar nova senha</Label>
-              <Input id="confirm" type="password" {...register("confirm")} />
+              <PasswordInput id="confirm" {...register("confirm")} />
               {errors.confirm && (
                 <p className="text-sm text-destructive">{errors.confirm.message}</p>
               )}
