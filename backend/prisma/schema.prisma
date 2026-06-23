@@ -1,0 +1,65 @@
+// Esquema Prisma do MVP Mídia Kit SaaS.
+// Banco: PostgreSQL hospedado no Supabase.
+// Migrações usam DIRECT_URL; o runtime usa DATABASE_URL (pgbouncer).
+
+generator client {
+  provider      = "prisma-client-js"
+  // native = host local; debian-openssl-3.0.x = imagem Docker (node:20-slim)
+  binaryTargets = ["native", "debian-openssl-3.0.x"]
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model User {
+  id        String            @id @default(uuid())
+  email     String            @unique
+  password  String? // Nulo se o login for via Social Login
+  profile   Profile?
+  tokens    OAuthConnection[]
+  createdAt DateTime          @default(now())
+}
+
+model Profile {
+  id          String  @id @default(uuid())
+  userId      String  @unique
+  usernameUrl String  @unique
+  bio         String?
+  avatarUrl   String?
+
+  // Campos adicionais usados pela vitrine pública do Front-End (MVP).
+  displayName String?
+  bannerUrl   String?
+  brandColor  String  @default("#6d28d9")
+  accentColor String  @default("#db2777")
+  location    String?
+  categories  String[] @default([])
+  links       Json     @default("[]") // [{ id, label, url }]
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model OAuthConnection {
+  id                    String            @id @default(uuid())
+  userId                String
+  provider              String // 'instagram' ou 'youtube'
+  accountId             String // ID do usuário na plataforma externa
+  accessTokenEncrypted  String
+  refreshTokenEncrypted String?
+  tokenExpiresAt        DateTime?
+  metrics               MetricsSnapshot[]
+  user                  User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, provider])
+}
+
+model MetricsSnapshot {
+  id           String          @id @default(uuid())
+  connectionId String
+  rawData      Json // JSONB: { "followers": 1000, "likes": 500 }
+  updatedAt    DateTime        @updatedAt
+  connection   OAuthConnection @relation(fields: [connectionId], references: [id], onDelete: Cascade)
+}
