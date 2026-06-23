@@ -5,9 +5,13 @@ import { useRouter } from "next/navigation";
 import { api } from "@/lib/services";
 import { toast } from "@/components/ui/use-toast";
 
+function msg(error: unknown): string {
+  return error instanceof Error ? error.message : "Tente novamente.";
+}
+
 /**
- * Hook de autenticação. A sessão é mantida por cookie HTTP-Only no backend —
- * o front nunca lê/armazena o token.
+ * Autenticação. Sessão por cookie HTTP-Only no backend — o front nunca
+ * lê/armazena o token.
  */
 export function useAuth() {
   const router = useRouter();
@@ -25,9 +29,11 @@ export function useAuth() {
       api.login(email, password),
     onSuccess: ({ user }) => {
       qc.setQueryData(["current-user"], user);
-      toast({ variant: "success", title: "Sessão iniciada com segurança" });
+      toast({ variant: "success", title: "Login efetuado", description: "Bem-vindo de volta!" });
       router.push("/dashboard");
-    }
+    },
+    onError: (error) =>
+      toast({ variant: "destructive", title: "Não foi possível entrar", description: msg(error) })
   });
 
   const register = useMutation({
@@ -42,21 +48,24 @@ export function useAuth() {
     }) => api.register(name, email, password),
     onSuccess: ({ user }) => {
       qc.setQueryData(["current-user"], user);
-      toast({ variant: "success", title: "Conta criada", description: "Sessão iniciada com segurança." });
+      toast({
+        variant: "success",
+        title: "Conta criada com sucesso!",
+        description: "Você já está conectado."
+      });
       router.push("/dashboard");
-    }
+    },
+    onError: (error) =>
+      toast({ variant: "destructive", title: "Não foi possível criar a conta", description: msg(error) })
   });
 
-  // Logout seguro: apaga a sessão no servidor (cookie HTTP-Only), limpa TODO o
-  // cache em memória e força navegação com replace() — assim o botão "voltar"
-  // não retorna para a área logada.
+  // Logout seguro: encerra a sessão no servidor (apaga o cookie), limpa o cache
+  // e navega com replace().
   const logout = useMutation({
     mutationFn: () => api.logout(),
     onSettled: () => {
       qc.clear();
-      if (typeof window !== "undefined") {
-        window.location.replace("/login?loggedout=1");
-      }
+      if (typeof window !== "undefined") window.location.replace("/login?loggedout=1");
     }
   });
 
