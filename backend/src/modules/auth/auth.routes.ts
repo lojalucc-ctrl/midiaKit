@@ -13,6 +13,7 @@ router.post("/logout", asyncHandler(authController.logout));
 router.get("/google", asyncHandler(authController.googleStart));
 router.get("/google/callback", asyncHandler(authController.googleCallback));
 
+router.post("/password", requireAuth, asyncHandler(authController.changePassword));
 router.get("/me", requireAuth, asyncHandler(authController.me));
 
 export default router;

@@ -14,7 +14,11 @@ export function useProfile() {
 
   const update = useMutation({
     mutationFn: (data: Partial<MediaKitProfile>) => api.updateProfile(data),
-    onSuccess: (data) => qc.setQueryData(["profile"], data)
+    onSuccess: (data) => {
+      qc.setQueryData(["profile"], data);
+      // Atualiza o avatar no header (vem de /auth/me).
+      qc.invalidateQueries({ queryKey: ["current-user"] });
+    }
   });
 
   return { ...query, update };

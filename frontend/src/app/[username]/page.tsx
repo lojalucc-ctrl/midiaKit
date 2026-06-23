@@ -11,6 +11,9 @@ import { api } from "@/lib/services";
 // buscados no servidor, então a página chega pronta (HTML/CSS) ao visitante,
 // garantindo carregamento rápido e bom SEO (seção 4.1 do spec).
 
+// Sempre buscar dados frescos (reflete alterações de perfil na hora).
+export const dynamic = "force-dynamic";
+
 type Props = { params: { username: string } };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
@@ -43,6 +46,7 @@ export default async function PublicMediaKitPage({ params }: Props) {
             alt={`Banner de ${profile.displayName}`}
             fill
             priority
+            unoptimized
             sizes="100vw"
             className="object-cover"
           />
@@ -68,6 +72,7 @@ export default async function PublicMediaKitPage({ params }: Props) {
                   src={profile.avatarUrl}
                   alt={profile.displayName}
                   fill
+                  unoptimized
                   sizes="112px"
                   className="object-cover"
                 />

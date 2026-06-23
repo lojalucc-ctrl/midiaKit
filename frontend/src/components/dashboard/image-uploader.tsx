@@ -4,38 +4,52 @@ import * as React from "react";
 import Image from "next/image";
 import { ImagePlus, X } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { toast } from "@/components/ui/use-toast";
+
+const MAX_BYTES = 1.5 * 1024 * 1024; // 1.5 MB por imagem
 
 /**
- * Uploader de imagem com preview no navegador ANTES do envio (seção 3 /perfil).
- * Gera uma URL temporária via URL.createObjectURL apenas para pré-visualização;
- * o upload real é feito pelo backend.
+ * Uploader de imagem. Lê o arquivo como data URL (base64) e devolve a string
+ * via onChange — assim a imagem é salva de fato no perfil (persistida no banco).
  */
 export function ImageUploader({
   label,
   initialUrl,
   aspect = "square",
-  onFileSelected
+  onChange
 }: {
   label: string;
   initialUrl?: string;
   aspect?: "square" | "banner";
-  onFileSelected?: (file: File | null) => void;
+  onChange?: (dataUrl: string | null) => void;
 }) {
   const [preview, setPreview] = React.useState<string | undefined>(initialUrl);
   const inputRef = React.useRef<HTMLInputElement>(null);
 
   function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0] ?? null;
-    if (file) {
-      const url = URL.createObjectURL(file);
-      setPreview(url);
-      onFileSelected?.(file);
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > MAX_BYTES) {
+      toast({
+        variant: "destructive",
+        title: "Imagem muito grande",
+        description: "Escolha um arquivo de até 1,5 MB."
+      });
+      if (inputRef.current) inputRef.current.value = "";
+      return;
     }
+    const reader = new FileReader();
+    reader.onload = () => {
+      const dataUrl = reader.result as string;
+      setPreview(dataUrl);
+      onChange?.(dataUrl);
+    };
+    reader.readAsDataURL(file);
   }
 
   function clear() {
     setPreview(undefined);
-    onFileSelected?.(null);
+    onChange?.("");
     if (inputRef.current) inputRef.current.value = "";
   }
 
@@ -54,6 +68,7 @@ export function ImageUploader({
               src={preview}
               alt={label}
               fill
+              unoptimized
               sizes="(max-width: 768px) 100vw, 400px"
               className="object-cover"
             />
@@ -86,13 +101,7 @@ export function ImageUploader({
           Trocar imagem
         </button>
       )}
-      <input
-        ref={inputRef}
-        type="file"
-        accept="image/*"
-        className="hidden"
-        onChange={handleChange}
-      />
+      <input ref={inputRef} type="file" accept="image/*" className="hidden" onChange={handleChange} />
     </div>
   );
 }

@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { ExternalLink, LogOut, Loader2, ShieldAlert } from "lucide-react";
+import { ExternalLink, LogOut, Loader2, ShieldAlert, Settings } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
@@ -35,6 +35,12 @@ export function Header() {
             </Link>
           </Button>
         )}
+
+        <Button variant="ghost" size="icon" asChild title="Configurações da conta">
+          <Link href="/dashboard/configuracoes">
+            <Settings className="h-4 w-4" />
+          </Link>
+        </Button>
 
         <Dialog open={open} onOpenChange={setOpen}>
           <DialogTrigger asChild>

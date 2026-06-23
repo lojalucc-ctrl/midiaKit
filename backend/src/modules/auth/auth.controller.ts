@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import jwt from "jsonwebtoken";
 import { authService } from "./auth.service";
 import { loginSchema, registerSchema } from "./auth.schema";
+import { changePasswordSchema } from "./password.schema";
 import { buildGoogleAuthUrl, exchangeGoogleCode, getGoogleUserInfo } from "./google-oauth";
 import { signToken } from "@/utils/jwt";
 import { setSessionCookie, clearSessionCookie } from "@/utils/cookies";
@@ -63,6 +64,12 @@ export const authController = {
       console.error("[google callback]", e);
       res.redirect(`${fe}/login?error=google_falhou`);
     }
+  },
+
+  async changePassword(req: Request, res: Response) {
+    const input = changePasswordSchema.parse(req.body);
+    await authService.changePassword(req.userId!, input.currentPassword, input.newPassword);
+    res.json({ ok: true });
   },
 
   async me(req: Request, res: Response) {

@@ -38,6 +38,13 @@ export const realApi = {
     return apiFetch<User>("/auth/me");
   },
 
+  changePassword(currentPassword: string | undefined, newPassword: string): Promise<{ ok: true }> {
+    return apiFetch<{ ok: true }>("/auth/password", {
+      method: "POST",
+      body: JSON.stringify({ currentPassword, newPassword })
+    });
+  },
+
   logout(): Promise<void> {
     return apiFetch<void>("/auth/logout", { method: "POST" }).catch(() => undefined);
   },

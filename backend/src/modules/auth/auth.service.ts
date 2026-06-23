@@ -69,6 +69,21 @@ export const authService = {
     return user;
   },
 
+  // Troca de senha. Usuários sociais (sem senha) podem definir a primeira.
+  async changePassword(userId: string, currentPassword: string | undefined, newPassword: string) {
+    const user = await prisma.user.findUnique({ where: { id: userId } });
+    if (!user) throw new HttpError(404, "Usuário não encontrado");
+    if (user.password) {
+      if (!currentPassword) throw new HttpError(400, "Informe a senha atual");
+      const ok = await comparePassword(currentPassword, user.password);
+      if (!ok) throw new HttpError(401, "Senha atual incorreta");
+    }
+    await prisma.user.update({
+      where: { id: userId },
+      data: { password: await hashPassword(newPassword) }
+    });
+  },
+
   // Social Login (Google): cria/retorna usuário sem senha, preenchendo avatar/nome.
   async findOrCreateSocialUser(email: string, name?: string, avatarUrl?: string) {
     const existing = await prisma.user.findUnique({

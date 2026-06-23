@@ -36,7 +36,7 @@ export function createApp() {
     })
   );
 
-  app.use(express.json({ limit: "1mb" }));
+  app.use(express.json({ limit: "8mb" }));
   app.use(cookieParser());
 
   // CORS com credenciais (cookies HTTP-Only) — reflete a origem se permitida.

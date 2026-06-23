@@ -57,6 +57,11 @@ export const mockApi = {
     await delay(100);
   },
 
+  async changePassword(_currentPassword: string | undefined, _newPassword: string): Promise<{ ok: true }> {
+    await delay(400);
+    return { ok: true };
+  },
+
   async getOverview(): Promise<DashboardOverview> {
     await delay();
     return mockOverview;

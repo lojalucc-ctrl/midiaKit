@@ -2,13 +2,14 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, Plug, UserCog, Sparkles } from "lucide-react";
+import { LayoutDashboard, Plug, UserCog, Settings, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const nav = [
   { href: "/dashboard", label: "Visão Geral", icon: LayoutDashboard },
   { href: "/dashboard/integracoes", label: "Integrações", icon: Plug },
-  { href: "/dashboard/perfil", label: "Perfil do Mídia Kit", icon: UserCog }
+  { href: "/dashboard/perfil", label: "Perfil do Mídia Kit", icon: UserCog },
+  { href: "/dashboard/configuracoes", label: "Configurações", icon: Settings }
 ];
 
 export function Sidebar() {
